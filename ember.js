@@ -34,7 +34,3 @@ window.addEventListener('scroll', function() {
     updateTransform();
 });
 
-floatingImage.addEventListener('click', function() {
-    window.location.href = 'ember.html';
-});
-

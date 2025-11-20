@@ -163,6 +163,50 @@ section li::before {
     color: #2d7a4f;
 }
 
+section h3 {
+    font-size: 1.5rem;
+    margin-top: 1.5rem;
+    margin-bottom: 0.8rem;
+    background: linear-gradient(135deg, #e0e0e0 0%, #c0c0c0 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+section pre {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 1rem;
+    overflow-x: auto;
+    margin: 1rem 0;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+}
+
+section code {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9em;
+}
+
+section ol {
+    list-style: decimal;
+    padding-left: 2rem;
+    margin: 1rem 0;
+}
+
+section ol li {
+    margin: 0.5rem 0;
+    padding-left: 0.5rem;
+}
+
+section ol li::before {
+    display: none;
+}
+
 a {
     color: #fff;
     text-decoration: none;
@@ -195,6 +239,16 @@ footer {
     top: 20%;
     right: 5%;
     transition: transform 0.1s ease-out;
+}
+
+.floating-image.clickable {
+    pointer-events: auto;
+    cursor: pointer;
+}
+
+.floating-image.clickable:hover {
+    transform: scale(1.1) !important;
+    filter: brightness(1.2);
 }
 
 @media (max-width: 768px) {

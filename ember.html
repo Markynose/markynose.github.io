@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ember browser - markynose's site</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>ember browser</h1>
+        <p class="subtitle">a lightweight desktop browser built with c++, webkitgtk, and gtk4. basically made this cuz i was bored and wanted a clean browser that actually does what i want</p>
+
+        <section>
+            <h2>what it does</h2>
+            <ul>
+                <li><strong>tabs</strong> - obviously. multiple tabs like any normal browser</li>
+                <li><strong>navigation</strong> - back, forward, reload, home. the usual stuff</li>
+                <li><strong>url bar</strong> - type urls or search directly, works how you'd expect</li>
+                <li><strong>bookmarks</strong> - saves your fav sites in json</li>
+                <li><strong>history</strong> - sqlite db tracks where you've been</li>
+                <li><strong>settings</strong> - customize homepage, search engine, font size, ad blocking</li>
+                <li><strong>downloads</strong> - keeps track of your downloads</li>
+                <li><strong>ad blocker</strong> - blocks ads (optional but recommended ngl)</li>
+                <li><strong>keyboard shortcuts</strong> - ctrl+t, ctrl+w, ctrl+r etc. if you know you know</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>how it's built</h2>
+            <p>split into modular components so it's not spaghetti code:</p>
+            <ul>
+                <li><strong>src/ui/</strong> - all the ui stuff (main window, nav bar, tabs)</li>
+                <li><strong>src/browser/</strong> - browser engine and webview wrappers</li>
+                <li><strong>src/tabs/</strong> - tab management</li>
+                <li><strong>src/settings/</strong> - settings manager</li>
+                <li><strong>src/history/</strong> - history tracking with sqlite</li>
+                <li><strong>src/bookmarks/</strong> - bookmark storage</li>
+                <li><strong>src/downloads/</strong> - download manager</li>
+                <li><strong>src/adblock/</strong> - ad blocking system</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>what you need</h2>
+            <h3>ubuntu/debian</h3>
+            <pre><code>sudo apt-get install build-essential cmake pkg-config
+sudo apt-get install libwebkit2gtk-4.1-dev libgtk-4-dev libsqlite3-dev libjson-glib-dev</code></pre>
+            
+            <h3>fedora</h3>
+            <pre><code>sudo dnf install gcc-c++ cmake pkg-config
+sudo dnf install webkit2gtk4.1-devel gtk4-devel sqlite-devel json-glib-devel</code></pre>
+            
+            <h3>arch btw</h3>
+            <pre><code>sudo pacman -S base-devel cmake pkg-config
+sudo pacman -S webkit2gtk gtk4 sqlite json-glib</code></pre>
+            
+            <h3>requirements</h3>
+            <ul>
+                <li>cmake 3.16+</li>
+                <li>c++17 compiler (gcc 7+ or clang 5+)</li>
+                <li>webkitgtk 2.40+</li>
+                <li>gtk4 4.0+</li>
+                <li>sqlite3</li>
+                <li>pkg-config</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>building</h2>
+            <ol>
+                <li>go to the project folder: <code>cd ember</code></li>
+                <li>make a build directory: <code>mkdir build && cd build</code></li>
+                <li>configure: <code>cmake ..</code></li>
+                <li>build it: <code>ninja</code></li>
+                <li>test if you want: <code>ctest</code></li>
+            </ol>
+        </section>
+
+        <section>
+            <h2>installing</h2>
+            <h3>system-wide (shows up in your app launcher)</h3>
+            <pre><code>cd build
+sudo ninja install
+sudo gtk-update-icon-cache /usr/share/icons/hicolor</code></pre>
+            <p>installs to:</p>
+            <ul>
+                <li><code>/usr/bin/ember</code> - the actual app</li>
+                <li><code>/usr/share/applications/</code> - desktop launcher</li>
+                <li><code>/usr/share/icons/hicolor/</code> - icon</li>
+            </ul>
+            <p>after this it'll show up in gnome or whatever de you're using</p>
+            
+            <h3>local install (no sudo)</h3>
+            <pre><code>cd build
+cmake --install . --prefix ~/.local
+gtk-update-icon-cache ~/.local/share/icons/hicolor</code></pre>
+            <p>make sure <code>~/.local/bin</code> is in your path tho</p>
+        </section>
+
+        <section>
+            <h2>running</h2>
+            <p>after building: <code>./ember</code></p>
+            <p>or from build directory: <code>./build/ember</code></p>
+            <p>if you installed it just run: <code>ember</code></p>
+            <p>or find it in your app launcher</p>
+        </section>
+
+        <section>
+            <h2>config</h2>
+            <p>ember saves stuff to <code>~/.config/ember/</code>:</p>
+            <ul>
+                <li><code>settings.conf</code> - your settings</li>
+                <li><code>history.db</code> - browsing history</li>
+                <li><code>bookmarks.json</code> - your bookmarks</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>keyboard shortcuts</h2>
+            <ul>
+                <li><strong>ctrl+t</strong> - new tab</li>
+                <li><strong>ctrl+w</strong> - close tab</li>
+                <li><strong>ctrl+r</strong> - reload</li>
+                <li><strong>alt+home</strong> - go home</li>
+                <li><strong>ctrl+q</strong> - quit</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>settings</h2>
+            <p>open settings from the menu to change:</p>
+            <ul>
+                <li><strong>homepage</strong> - what loads when you open a tab</li>
+                <li><strong>search engine</strong> - google, duckduckgo, or bing</li>
+                <li><strong>font size</strong> - make text bigger or smaller (0.5x to 3.0x)</li>
+                <li><strong>ad blocker</strong> - turn it on or off</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>ad blocking</h2>
+            <p>uses a domain blacklist to block:</p>
+            <ul>
+                <li>ad servers</li>
+                <li>tracking scripts</li>
+                <li>sketchy domains</li>
+            </ul>
+            <p>you can edit <code>src/adblock/filter_list.hpp</code> to customize what gets blocked</p>
+        </section>
+
+        <section>
+            <h2>development</h2>
+            <h3>project structure</h3>
+            <pre><code>ember/
+├── CMakeLists.txt          # build config
+├── README.md               # you are here
+├── src/                    # source code
+│   ├── main.cpp           # entry point
+│   ├── ui/                # ui components
+│   ├── browser/           # browser engine
+│   ├── tabs/              # tab management
+│   ├── settings/          # settings
+│   ├── history/           # history
+│   ├── bookmarks/         # bookmarks
+│   ├── downloads/         # downloads
+│   └── adblock/           # ad blocking
+└── tests/                  # unit tests</code></pre>
+            
+            <h3>running tests</h3>
+            <pre><code>cd build
+ctest</code></pre>
+            <p>or individually:</p>
+            <pre><code>./tests/test_history
+./tests/test_bookmarks
+./tests/test_settings</code></pre>
+        </section>
+
+        <section>
+            <h2>troubleshooting</h2>
+            <h3>build failing?</h3>
+            <ol>
+                <li>check you installed all the dependencies</li>
+                <li>make sure pkg-config can find them:
+                    <pre><code>pkg-config --modversion webkit2gtk-4.1
+pkg-config --modversion gtk4</code></pre>
+                </li>
+            </ol>
+            
+            <h3>won't start?</h3>
+            <ol>
+                <li>check webkitgtk and gtk4 are installed</li>
+                <li>make sure you can write to <code>~/.config/ember/</code></li>
+                <li>look at the error messages lol</li>
+            </ol>
+            
+            <h3>pages not loading?</h3>
+            <ul>
+                <li>check your internet connection fr</li>
+                <li>some sites need javascript enabled</li>
+                <li>make sure the url is valid</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>contributing</h2>
+            <p>prs welcome! just keep the code style consistent and add comments if you're doing something weird</p>
+        </section>
+
+        <section>
+            <h2>credits</h2>
+            <ul>
+                <li>webkitgtk for the rendering engine</li>
+                <li>gtk4 for the ui</li>
+                <li>sqlite for history storage</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>license</h2>
+            <p>do whatever you want with it idc. it's for learning and building cool stuff</p>
+            <p>made this because existing browsers are bloated af. wanted something simple that just works.</p>
+            <p>if you find bugs or have ideas, open an issue or whatever</p>
+        </section>
+        <section>
+            <h2>download</h2>
+            <p>download the latest release from the <a href="https://github.com/Markynose/ember-browser/releases" target="_blank">github releases</a></p>
+            <p>or build it from source if the binaries arent available</p>
+            <pre><code>git clone https://github.com/Markynose/ember-browser.git
+cd ember-browser
+mkdir build
+cd build
+cmake ..
+ninja
+./ember</code></pre>
+        </section>
+        <footer>
+            <p>© 2026 i think, made really onto something by @markynose (im high bro)</p>
+            <p><a href="index.html">back to main site</a></p>
+        </footer>
+    </div>
+
+    <div class="floating-image" id="floatingImage"></div>
+
+    <script src="ember.js"></script>
+</body>
+</html>
+
