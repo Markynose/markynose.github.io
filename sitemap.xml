@@ -1,37 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
-        <loc>http://localhost:1111/</loc>
+        <loc>https://markynose.github.io/</loc>
     </url>
     <url>
-        <loc>http://localhost:1111/about/</loc>
+        <loc>https://markynose.github.io/about/</loc>
     </url>
     <url>
-        <loc>http://localhost:1111/blog/</loc>
+        <loc>https://markynose.github.io/blog/</loc>
     </url>
     <url>
-        <loc>http://localhost:1111/blog/page/1/</loc>
+        <loc>https://markynose.github.io/blog/page/1/</loc>
     </url>
     <url>
-        <loc>http://localhost:1111/blog/smart-emerge-network-aware/</loc>
+        <loc>https://markynose.github.io/blog/smart-emerge-network-aware/</loc>
         <lastmod>2026-04-05</lastmod>
     </url>
     <url>
-        <loc>http://localhost:1111/tags/</loc>
+        <loc>https://markynose.github.io/tags/</loc>
     </url>
     <url>
-        <loc>http://localhost:1111/tags/bash/</loc>
+        <loc>https://markynose.github.io/tags/bash/</loc>
     </url>
     <url>
-        <loc>http://localhost:1111/tags/distcc/</loc>
+        <loc>https://markynose.github.io/tags/distcc/</loc>
     </url>
     <url>
-        <loc>http://localhost:1111/tags/gentoo/</loc>
+        <loc>https://markynose.github.io/tags/gentoo/</loc>
     </url>
     <url>
-        <loc>http://localhost:1111/tags/networking/</loc>
+        <loc>https://markynose.github.io/tags/networking/</loc>
     </url>
     <url>
-        <loc>http://localhost:1111/tags/wireguard/</loc>
+        <loc>https://markynose.github.io/tags/wireguard/</loc>
     </url>
 </urlset>
