@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Updated smart-emerge to detect whether I&#x27;m on the home LAN and route distcc through WireGuard automatically when I&#x27;m not.">
+
+  <title>Making smart-emerge Network-Aware — ~&#x2F;blog</title>
+
+  <!-- Nerd Font symbols (PUA range only, ~50KB) -->
+  <style>
+    @font-face {
+      font-family: 'NF';
+      src: url('https://cdn.jsdelivr.net/gh/ryanoasis/nerd-fonts@v3.2.1/patched-fonts/NerdFontsSymbolsOnly/SymbolsNerdFontMono-Regular.ttf') format('truetype');
+      unicode-range: U+E000-F8FF, U+F0000-FFFFF;
+      font-display: swap;
+    }
+    /* JetBrains Mono for body text */
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap');
+  </style>
+
+  <link rel="stylesheet" href="http://localhost:1111/css/main.css">
+
+  
+  <link rel="alternate" type="application/atom+xml" title="~&#x2F;blog — Feed"
+        href="http://localhost:1111/atom.xml">
+  
+
+  
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a href="http:&#x2F;&#x2F;localhost:1111" class="site-title">
+      <span class="prompt">❯</span> ~&#x2F;blog
+    </a>
+    <nav class="site-nav">
+      <a href="http:&#x2F;&#x2F;localhost:1111" class="nav-link">
+        <span class="nf">&#xF015;</span> home
+      </a>
+      <a href="http://localhost:1111/blog" class="nav-link">
+        <span class="nf">&#xF15C;</span> posts
+      </a>
+      <a href="http://localhost:1111/tags" class="nav-link">
+        <span class="nf">&#xF02B;</span> tags
+      </a>
+      <a href="http://localhost:1111/about" class="nav-link">
+        <span class="nf">&#xF007;</span> about
+      </a>
+      
+      <a href="http://localhost:1111/atom.xml" class="nav-link nav-feed" title="Atom feed">
+        <span class="nf">&#xF09E;</span>
+      </a>
+      
+    </nav>
+  </div>
+</header>
+
+<main class="site-main">
+  
+<article class="post">
+
+  <header class="post-header">
+    <h1 class="post-title">Making smart-emerge Network-Aware</h1>
+
+    
+    <div class="post-meta">
+      <span class="post-meta-item">
+        <span class="nf meta-icon">&#xF073;</span>
+        <time datetime="2026-04-05">
+          2026-04-05
+        </time>
+      </span>
+
+      
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-item">
+        <span class="nf meta-icon">&#xF017;</span>
+        2 min read
+      </span>
+      
+
+      
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-item post-meta-tags">
+        
+        <a href="http://localhost:1111/tags/gentoo/" class="tag">#gentoo</a>
+        
+        <a href="http://localhost:1111/tags/bash/" class="tag">#bash</a>
+        
+        <a href="http://localhost:1111/tags/distcc/" class="tag">#distcc</a>
+        
+        <a href="http://localhost:1111/tags/wireguard/" class="tag">#wireguard</a>
+        
+        <a href="http://localhost:1111/tags/networking/" class="tag">#networking</a>
+        
+      </span>
+      
+    </div>
+    
+
+    
+    <p class="post-description">Updated smart-emerge to detect whether I&#x27;m on the home LAN and route distcc through WireGuard automatically when I&#x27;m not.</p>
+    
+  </header>
+
+  <div class="post-content">
+    <p><code>smart-emerge</code> is a wrapper script I use to offload Gentoo compilation to my
+home server (<code>femboy</code>) via distcc. It worked fine as long as I was sitting on
+the home LAN — but the moment I took ThiccPad somewhere else, it would just
+silently fall back to local builds, which is slow.</p>
+<p>I finally sat down and made it actually smart.</p>
+<h2 id="what-it-does-now"><a class="zola-anchor" href="#what-it-does-now" aria-label="Anchor link for: what-it-does-now">🔗</a>What it does now</h2>
+<ol>
+<li><strong>Check if we're home</strong> — looks for the home SSID (<code>TP-Link_F22C</code>) or an
+active ethernet connection</li>
+<li><strong>If on LAN</strong> — use distcc directly, same as before</li>
+<li><strong>If off-site</strong> — bring up <code>wg0</code> and reach <code>femboy</code> through the tunnel</li>
+<li><strong>If the tunnel fails too</strong> — prompt: build locally or abort</li>
+<li><strong>On the way back</strong> — if <code>wg0</code> is up and we're back on LAN, tear it down
+automatically</li>
+</ol>
+<p>That last point matters because the new WireGuard config is full-tunnel
+(<code>0.0.0.0/0</code>). The old one only tunneled <code>192.168.0.0/24</code>, so leaving it up
+on LAN was harmless. Full-tunnel with wg0 up on the home network breaks
+everything, so teardown has to be automatic.</p>
+<h2 id="network-detection"><a class="zola-anchor" href="#network-detection" aria-label="Anchor link for: network-detection">🔗</a>Network detection</h2>
+<pre class="giallo" style="color: #F8F8F2; background-color: #282A36;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #50FA7B;">is_home_lan</span><span>() {</span></span>
+<span class="giallo-l"><span style="color: #6272A4;">    # check SSID (wireless)</span></span>
+<span class="giallo-l"><span style="color: #FF79C6;">    local</span><span style="color: #BD93F9;"> ssid</span></span>
+<span class="giallo-l"><span style="color: #BD93F9;">    ssid</span><span style="color: #FF79C6;">=</span><span>$(</span><span style="color: #50FA7B;">iwgetid</span><span style="color: #BD93F9;"> -r</span><span style="color: #FF79C6;"> 2&gt;</span><span style="color: #F1FA8C;">/dev/null</span><span>)</span></span>
+<span class="giallo-l"><span>    [[</span><span style="color: #E9F284;"> &quot;</span><span style="color: #BD93F9;">$ssid</span><span style="color: #E9F284;">&quot;</span><span style="color: #FF79C6;"> ==</span><span style="color: #E9F284;"> &quot;</span><span style="color: #F1FA8C;">TP-Link_F22C</span><span style="color: #E9F284;">&quot;</span><span> ]] &amp;&amp;</span><span style="color: #FF79C6;"> return</span><span style="color: #BD93F9;"> 0</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #6272A4;">    # check for active ethernet</span></span>
+<span class="giallo-l"><span style="color: #FF79C6;">    for</span><span style="color: #BD93F9;"> iface</span><span style="color: #FF79C6;"> in</span><span style="color: #F1FA8C;"> /sys/class/net/en*</span><span>;</span><span style="color: #FF79C6;"> do</span></span>
+<span class="giallo-l"><span style="color: #BD93F9;">        iface</span><span style="color: #FF79C6;">=</span><span>$(</span><span style="color: #50FA7B;">basename</span><span style="color: #E9F284;"> &quot;</span><span style="color: #BD93F9;">$iface</span><span style="color: #E9F284;">&quot;</span><span>)</span></span>
+<span class="giallo-l"><span style="color: #FF79C6;">        local</span><span style="color: #BD93F9;"> state</span></span>
+<span class="giallo-l"><span style="color: #BD93F9;">        state</span><span style="color: #FF79C6;">=</span><span>$(</span><span style="color: #50FA7B;">cat</span><span style="color: #E9F284;"> &quot;</span><span style="color: #F1FA8C;">/sys/class/net/</span><span style="color: #BD93F9;">$iface</span><span style="color: #F1FA8C;">/operstate</span><span style="color: #E9F284;">&quot;</span><span style="color: #FF79C6;"> 2&gt;</span><span style="color: #F1FA8C;">/dev/null</span><span>)</span></span>
+<span class="giallo-l"><span>        [[</span><span style="color: #E9F284;"> &quot;</span><span style="color: #BD93F9;">$state</span><span style="color: #E9F284;">&quot;</span><span style="color: #FF79C6;"> ==</span><span style="color: #E9F284;"> &quot;</span><span style="color: #F1FA8C;">up</span><span style="color: #E9F284;">&quot;</span><span> ]] &amp;&amp;</span><span style="color: #FF79C6;"> return</span><span style="color: #BD93F9;"> 0</span></span>
+<span class="giallo-l"><span style="color: #FF79C6;">    done</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #FF79C6;">    return</span><span style="color: #BD93F9;"> 1</span></span>
+<span class="giallo-l"><span>}</span></span></code></pre><h2 id="wireguard-bring-up-and-teardown"><a class="zola-anchor" href="#wireguard-bring-up-and-teardown" aria-label="Anchor link for: wireguard-bring-up-and-teardown">🔗</a>WireGuard bring-up and teardown</h2>
+<pre class="giallo" style="color: #F8F8F2; background-color: #282A36;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #50FA7B;">ensure_tunnel</span><span>() {</span></span>
+<span class="giallo-l"><span style="color: #50FA7B;">    wg</span><span style="color: #F1FA8C;"> show wg0</span><span> &amp;</span><span style="color: #FF79C6;">&gt;</span><span>/dev/null &amp;&amp;</span><span style="color: #FF79C6;"> return</span><span style="color: #BD93F9;"> 0</span><span style="color: #6272A4;">   # already up</span></span>
+<span class="giallo-l"><span style="color: #50FA7B;">    wg-quick</span><span style="color: #F1FA8C;"> up wg0</span><span style="color: #FF79C6;"> || return</span><span style="color: #BD93F9;"> 1</span></span>
+<span class="giallo-l"><span style="color: #6272A4;">    # give it a moment to establish</span></span>
+<span class="giallo-l"><span style="color: #50FA7B;">    sleep</span><span style="color: #BD93F9;"> 1</span></span>
+<span class="giallo-l"><span style="color: #50FA7B;">    ping</span><span style="color: #BD93F9;"> -c1 -W2 10.5.5.1</span><span> &amp;</span><span style="color: #FF79C6;">&gt;</span><span>/dev/null</span><span style="color: #6272A4;">    # check femboy is reachable</span></span>
+<span class="giallo-l"><span>}</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #50FA7B;">teardown_if_home</span><span>() {</span></span>
+<span class="giallo-l"><span style="color: #50FA7B;">    wg</span><span style="color: #F1FA8C;"> show wg0</span><span> &amp;</span><span style="color: #FF79C6;">&gt;</span><span>/dev/null </span><span style="color: #FF79C6;">|| return</span><span style="color: #BD93F9;"> 0</span><span style="color: #6272A4;">   # not up, nothing to do</span></span>
+<span class="giallo-l"><span style="color: #50FA7B;">    is_home_lan</span><span> &amp;&amp;</span><span style="color: #50FA7B;"> wg-quick</span><span style="color: #F1FA8C;"> down wg0</span></span>
+<span class="giallo-l"><span>}</span></span></code></pre><h2 id="the-main-logic"><a class="zola-anchor" href="#the-main-logic" aria-label="Anchor link for: the-main-logic">🔗</a>The main logic</h2>
+<pre class="giallo" style="color: #F8F8F2; background-color: #282A36;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #50FA7B;">main</span><span>() {</span></span>
+<span class="giallo-l"><span style="color: #50FA7B;">    teardown_if_home</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #FF79C6;">    if</span><span style="color: #50FA7B;"> is_home_lan</span><span>;</span><span style="color: #FF79C6;"> then</span></span>
+<span class="giallo-l"><span style="color: #50FA7B;">        log</span><span style="color: #E9F284;"> &quot;</span><span style="color: #F1FA8C;">on LAN — using distcc directly</span><span style="color: #E9F284;">&quot;</span></span>
+<span class="giallo-l"><span style="color: #50FA7B;">        run_emerge</span><span style="color: #E9F284;"> &quot;</span><span style="color: #FFB86C;font-style: italic;">$@</span><span style="color: #E9F284;">&quot;</span></span>
+<span class="giallo-l"><span style="color: #FF79C6;">        return</span></span>
+<span class="giallo-l"><span style="color: #FF79C6;">    fi</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #50FA7B;">    log</span><span style="color: #E9F284;"> &quot;</span><span style="color: #F1FA8C;">off-site — attempting WireGuard tunnel</span><span style="color: #E9F284;">&quot;</span></span>
+<span class="giallo-l"><span style="color: #FF79C6;">    if</span><span style="color: #50FA7B;"> ensure_tunnel</span><span>;</span><span style="color: #FF79C6;"> then</span></span>
+<span class="giallo-l"><span style="color: #50FA7B;">        log</span><span style="color: #E9F284;"> &quot;</span><span style="color: #F1FA8C;">tunnel up — using distcc via 10.5.5.2</span><span style="color: #E9F284;">&quot;</span></span>
+<span class="giallo-l"><span style="color: #50FA7B;">        run_emerge</span><span style="color: #E9F284;"> &quot;</span><span style="color: #FFB86C;font-style: italic;">$@</span><span style="color: #E9F284;">&quot;</span></span>
+<span class="giallo-l"><span style="color: #FF79C6;">    else</span></span>
+<span class="giallo-l"><span style="color: #8BE9FD;">        echo</span><span style="color: #E9F284;"> &quot;</span><span style="color: #F1FA8C;">distcc unreachable (LAN and tunnel both failed)</span><span style="color: #E9F284;">&quot;</span></span>
+<span class="giallo-l"><span style="color: #8BE9FD;">        read</span><span style="color: #BD93F9;"> -rp</span><span style="color: #E9F284;"> &quot;</span><span style="color: #F1FA8C;">build locally? [y/N] </span><span style="color: #E9F284;">&quot;</span><span style="color: #F1FA8C;"> answer</span></span>
+<span class="giallo-l"><span>        [[</span><span style="color: #E9F284;"> &quot;</span><span style="color: #BD93F9;">$answer</span><span style="color: #E9F284;">&quot;</span><span style="color: #FF79C6;"> =~</span><span> ^[Yy]$ ]]</span><span style="color: #FF79C6;"> ||</span><span style="color: #8BE9FD;"> exit</span><span style="color: #BD93F9;"> 1</span></span>
+<span class="giallo-l"><span style="color: #BD93F9;">        MAKEOPTS</span><span style="color: #FF79C6;">=</span><span style="color: #E9F284;">&quot;</span><span style="color: #F1FA8C;">-j$(</span><span style="color: #50FA7B;">nproc</span><span style="color: #F1FA8C;">)</span><span style="color: #E9F284;">&quot;</span><span style="color: #50FA7B;"> run_emerge</span><span style="color: #E9F284;"> &quot;</span><span style="color: #FFB86C;font-style: italic;">$@</span><span style="color: #E9F284;">&quot;</span></span>
+<span class="giallo-l"><span style="color: #FF79C6;">    fi</span></span>
+<span class="giallo-l"><span>}</span></span></code></pre><h2 id="wireguard-config-change"><a class="zola-anchor" href="#wireguard-config-change" aria-label="Anchor link for: wireguard-config-change">🔗</a>WireGuard config change</h2>
+<p>The old config only routed <code>192.168.0.0/24</code> through the tunnel — a split
+tunnel just for reaching home network addresses. Replaced it with a
+full-tunnel config (<code>AllowedIPs = 0.0.0.0/0, ::/0</code>) so all traffic goes
+through when I'm out, which is what I actually want.</p>
+<p>Tested the new config: came up clean, <code>femboy</code> reachable at <code>10.5.5.2</code>,
+distcc handshake working. The auto-teardown on LAN detection also works —
+connecting to <code>TP-Link_F22C</code> triggers the check and <code>wg-quick down wg0</code> runs
+before emerge even starts.</p>
+<p>One less thing to remember to do manually.</p>
+
+  </div>
+
+  <footer class="post-footer">
+    <div class="post-nav">
+      
+      <span></span>
+      
+
+      
+    </div>
+
+    <div class="back-link">
+      <a href="http://localhost:1111/blog">← all posts</a>
+    </div>
+  </footer>
+
+</article>
+
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <span class="footer-left">
+      <span class="prompt">❯</span>
+      <span class="muted">mark</span>
+      <span class="muted separator">—</span>
+      <span class="muted">powered by <a href="https://www.getzola.org/" class="footer-link">zola</a></span>
+    </span>
+    <span class="footer-right muted">
+      <a href="http://localhost:1111/atom.xml" class="footer-link">
+        <span class="nf">&#xF09E;</span> feed
+      </a>
+    </span>
+  </div>
+</footer>
+
+</body>
+</html>
