@@ -10,6 +10,10 @@
         <loc>https://markynose.github.io/blog/</loc>
     </url>
     <url>
+        <loc>https://markynose.github.io/blog/hey/</loc>
+        <lastmod>2026-04-05</lastmod>
+    </url>
+    <url>
         <loc>https://markynose.github.io/blog/page/1/</loc>
     </url>
     <url>
@@ -27,6 +31,9 @@
     </url>
     <url>
         <loc>https://markynose.github.io/tags/gentoo/</loc>
+    </url>
+    <url>
+        <loc>https://markynose.github.io/tags/hello/</loc>
     </url>
     <url>
         <loc>https://markynose.github.io/tags/networking/</loc>

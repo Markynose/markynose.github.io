@@ -8,6 +8,26 @@
     <updated>2026-04-05T00:00:00+00:00</updated>
     <id>https://markynose.github.io/atom.xml</id>
     <entry xml:lang="en">
+        <title>hey!</title>
+        <published>2026-04-05T00:00:00+00:00</published>
+        <updated>2026-04-05T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://markynose.github.io/blog/hey/"/>
+        <id>https://markynose.github.io/blog/hey/</id>
+        
+        <content type="html" xml:base="https://markynose.github.io/blog/hey/">&lt;p&gt;hey its me Markynose! Real name&#x27;s Mark. first time trying blogs, using zola which runs on rust (which i love). Gonna post my fixes and other intresting things.&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
         <title>Making smart-emerge Network-Aware</title>
         <published>2026-04-05T00:00:00+00:00</published>
         <updated>2026-04-05T00:00:00+00:00</updated>
